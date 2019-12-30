@@ -1,31 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const Requester = require('../models/request-model');
+const checkAuth = require('../../middleware/auth');
 const mongoose = require('mongoose');
 
-router.get('/',(req, res, next)=> {
+router.get('/',checkAuth ,(req, res, next)=> {
   Requester.find()
+            .select("_id name bloodGroup AmountOfBlood location contactNo needWithIn managed")
             .exec()
             .then(result => {
-              if(result.length >= 0){
-                res.status(200).json({
-                  requesterData : result
-                })
-              } else {
-                res.status(404).json({
-                  message: 'not found any data'
-                })
+              const response = {
+                success : true,
+                error: null,
+                data: result
               }
+              res.status(200).json(response)
             })
             .catch(error => {
               res.status(500).json({
-                message : error
+                success : false,
+                error: error
               })
             });
 });
 
 
-router.post('/',(req, res, next)=> {
+router.post('/', checkAuth, (req, res, next)=> {
 
   const requester = new Requester({
     _id: new mongoose.Types.ObjectId(),
@@ -39,53 +39,53 @@ router.post('/',(req, res, next)=> {
 
   })
   requester.save().then(result => {
-    console.log(result);
-
-    res.status(201).json({
-      message : 'requester created ',
-      requesterData: requester
-    })
+    const response = {
+      success : true,
+      error: null,
+      data: result
+    }
+    res.status(201).json(response)
 
   }).catch( err => {
-    console.log(err);
-
     res.status(500).json({
-      error: error
-    });
+      success : false,
+      error: err
+    })
   });
 })
 
 
-router.get('/:requestID',(req, res, next)=> {
+router.get('/:requestID',checkAuth, (req, res, next)=> {
   const requestID = req.params.requestID;
   Requester.findById(requestID)
   .exec()
   .then(result => {
-    console.log(result);
     if(result)
     {
-
-      res.status(201).json({
-        message : 'requester find with id ',
-        requesterData: result
-      })
+      const response = {
+        success : true,
+        error: null,
+        data: result
+      }
+      res.status(200).json(response)
     }
     else {
-      res.status(404).json({
-        message: 'not found valid '
+      res.status(500).json({
+        success : false,
+        error: err
       })
     }
   })
   .catch(error => {
-    console.log(error);
     res.status(500).json({
-      error: error
+      success : false,
+      error: err
     });
   });
 
 });
 
-router.patch('/:requestID',(req, res, next)=> {
+router.patch('/:requestID',checkAuth,(req, res, next)=> {
   const requestID = req.params.requestID;
   const updateOps = {};
   for(const ops of req.body){
@@ -95,33 +95,38 @@ router.patch('/:requestID',(req, res, next)=> {
   Requester.update({ _id: requestID}, { $set: updateOps} )
           .exec()
           .then(result => {
-            res.status(201).json({
-              message : 'updated id request hit',
-              Data : result
-            })
+            const response = {
+              success : true,
+              error: null,
+              data: result
+            }
+            res.status(200).json(response)
           })
           .catch(error => {
             res.status(500).json({
-              message : 'updated not done',
-              error: error
-            })
+              success : false,
+              error: err
+            });
           });
 
 })
 
-router.delete('/:requestID',(req, res, next)=> {
+router.delete('/:requestID',checkAuth,(req, res, next)=> {
   const requestID = req.params.requestID;
   Requester.remove({ _id: requestID}).exec()
             .then(result => {
-              res.status(200).json({
-                message : 'succesfully deleted',
-                result : result
-              })
+              const response = {
+                success : true,
+                error: null,
+                data: result
+              }
+              res.status(200).json(response)
             })
             .catch( error=> {
               res.status(500).json({
-                message : error
-              })
+                success : false,
+                error: err
+              });
             });
 })
 

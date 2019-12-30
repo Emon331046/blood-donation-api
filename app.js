@@ -5,9 +5,10 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const blood_request = require('./api/routes/blood-request');
-
 const blood_donate = require('./api/routes/blood-donator');
+const user_routes = require('./api/routes/user');
 
+mongoose.Promise = global.Promise;
 app.use(morgan('dev'));
 mongoose.connect('mongodb+srv://hremon046:331046hr@emoncluster-0ve0o.mongodb.net/test?retryWrites=true&w=majority',
 {
@@ -30,6 +31,7 @@ app.use((req, res, next)=>{
 
 app.use('/blood-request',blood_request);
 app.use('/blood-donate',blood_donate);
+app.use('/user',user_routes);
 
 app.use((req,res,next)=>{
   const error = new Error('Not found');
